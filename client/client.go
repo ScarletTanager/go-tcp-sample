@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"os"
+	"syscall"
 	"time"
 )
 
@@ -42,6 +44,9 @@ func main() {
 			log.Println("Writing...")
 			written, err := conn.Write(bytesToWrite)
 			if err != nil {
+				if errors.Is(err, syscall.EPIPE) {
+					log.Fatal("Broken pipe, we need to reconnect or die")
+				}
 				fmt.Fprintf(os.Stderr, "Got an error: %s\n", err.Error())
 			}
 
